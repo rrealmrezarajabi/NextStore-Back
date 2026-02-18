@@ -1,12 +1,16 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma, User } from '@prisma/client';
-import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../prisma/prisma.service';
-import { paginate } from '../common/utils/paginate';
-import { AppRole } from '../common/types/role.type';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UsersQueryDto } from './dto/users-query.dto';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
+import { Prisma, User } from "@prisma/client";
+import * as bcrypt from "bcrypt";
+import { PrismaService } from "../prisma/prisma.service";
+import { paginate } from "../common/utils/paginate";
+import { AppRole } from "../common/types/role.type";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
+import { UsersQueryDto } from "./dto/users-query.dto";
 
 @Injectable()
 export class UsersService {
@@ -19,14 +23,14 @@ export class UsersService {
       role: user.role,
       email: user.email,
       avatar: user.avatar,
-      password: '',
+      password: "",
     };
   }
 
   async findMany(query: UsersQueryDto) {
-    const offset = query.offset ?? 0;
+    const page = query.page ?? 1;
     const limit = query.limit ?? 20;
-    const isFlat = query.flat !== 'false';
+    const skip = (page - 1) * limit;
 
     const where: Prisma.UserWhereInput = query.search
       ? {
@@ -40,20 +44,19 @@ export class UsersService {
     const [items, total] = await Promise.all([
       this.prisma.user.findMany({
         where,
-        skip: offset,
+        skip,
         take: limit,
-        orderBy: { id: 'asc' },
+        orderBy: { id: "asc" },
       }),
       this.prisma.user.count({ where }),
     ]);
 
-    const data = items.map((user) => this.sanitize(user));
-
-    if (isFlat) {
-      return data;
-    }
-
-    return paginate(data, total, offset, limit);
+    return paginate(
+      items.map((u) => this.sanitize(u)),
+      total,
+      page,
+      limit,
+    );
   }
 
   async findOne(id: number) {
@@ -79,7 +82,7 @@ export class UsersService {
   async create(dto: CreateUserDto) {
     const existing = await this.findByEmail(dto.email);
     if (existing) {
-      throw new ConflictException('Email already exists');
+      throw new ConflictException("Email already exists");
     }
 
     const passwordHash = await bcrypt.hash(dto.password, 10);
@@ -89,7 +92,7 @@ export class UsersService {
         name: dto.name,
         email: dto.email,
         avatar: dto.avatar,
-        role: dto.role ?? ('customer' as AppRole),
+        role: dto.role ?? ("customer" as AppRole),
         passwordHash,
       },
     });
@@ -103,7 +106,7 @@ export class UsersService {
     if (dto.email) {
       const emailOwner = await this.findByEmail(dto.email);
       if (emailOwner && emailOwner.id !== id) {
-        throw new ConflictException('Email already exists');
+        throw new ConflictException("Email already exists");
       }
     }
 

@@ -1,19 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
-import { PrismaService } from '../prisma/prisma.service';
-import { paginate } from '../common/utils/paginate';
-import { CategoriesQueryDto } from './dto/categories-query.dto';
-import { CreateCategoryDto } from './dto/create-category.dto';
-import { UpdateCategoryDto } from './dto/update-category.dto';
+import { Injectable, NotFoundException } from "@nestjs/common";
+import { Prisma } from "@prisma/client";
+import { PrismaService } from "../prisma/prisma.service";
+import { paginate } from "../common/utils/paginate";
+import { CategoriesQueryDto } from "./dto/categories-query.dto";
+import { CreateCategoryDto } from "./dto/create-category.dto";
+import { UpdateCategoryDto } from "./dto/update-category.dto";
 
 @Injectable()
 export class CategoriesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async findMany(query: CategoriesQueryDto) {
-    const offset = query.offset ?? 0;
+    const page = query.page ?? 1;
     const limit = query.limit ?? 20;
-    const isFlat = query.flat !== 'false';
+    const skip = (page - 1) * limit;
 
     const where: Prisma.CategoryWhereInput = query.name
       ? { name: { contains: query.name } }
@@ -22,18 +22,14 @@ export class CategoriesService {
     const [items, total] = await Promise.all([
       this.prisma.category.findMany({
         where,
-        skip: offset,
+        skip,
         take: limit,
-        orderBy: { id: 'asc' },
+        orderBy: { id: "asc" },
       }),
       this.prisma.category.count({ where }),
     ]);
 
-    if (isFlat) {
-      return items;
-    }
-
-    return paginate(items, total, offset, limit);
+    return paginate(items, total, page, limit);
   }
 
   async findOne(id: number) {
@@ -50,7 +46,7 @@ export class CategoriesService {
     const products = await this.prisma.product.findMany({
       where: { categoryId: id },
       include: { category: true, images: true },
-      orderBy: { id: 'asc' },
+      orderBy: { id: "asc" },
     });
 
     return products.map((product) => ({

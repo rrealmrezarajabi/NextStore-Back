@@ -1,8 +1,10 @@
 export type PaginatedMeta = {
   total: number;
-  offset: number;
+  page: number;
   limit: number;
+  totalPages: number;
   hasNext: boolean;
+  hasPrev: boolean;
 };
 
 export type PaginatedResponse<T> = {

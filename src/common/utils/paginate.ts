@@ -1,13 +1,20 @@
-import { PaginatedResponse } from '../types/paginated-response.type';
+import { PaginatedResponse } from "../types/paginated-response.type";
 
-export function paginate<T>(items: T[], total: number, offset: number, limit: number): PaginatedResponse<T> {
+export function paginate<T>(
+  items: T[],
+  total: number,
+  page: number,
+  limit: number,
+): PaginatedResponse<T> {
   return {
     data: items,
     meta: {
       total,
-      offset,
+      page,
       limit,
-      hasNext: offset + items.length < total,
+      totalPages: Math.ceil(total / limit),
+      hasNext: page * limit < total,
+      hasPrev: page > 1,
     },
   };
 }
