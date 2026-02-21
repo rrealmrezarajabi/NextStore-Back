@@ -49,6 +49,9 @@ This API is designed to feel like Platzi Fake Store API while keeping a stable l
 ```json
 {
   "id": 1,
+  "firstName": "NextStore",
+  "lastName": "Admin",
+  "username": "admin",
   "name": "NextStore Admin",
   "role": "admin",
   "email": "admin@nextstore.dev",
@@ -58,6 +61,52 @@ This API is designed to feel like Platzi Fake Store API while keeping a stable l
 ```
 
 ## Auth
+
+### POST `/auth/register`
+
+Register a new customer account.
+
+Request:
+
+```json
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "username": "john_doe",
+  "email": "john@example.com",
+  "password": "secret123",
+  "avatar": "https://example.com/avatar.jpg"
+}
+```
+
+> `avatar` is optional. If omitted, a default avatar is generated automatically.
+
+Response:
+
+```json
+{
+  "access_token": "...",
+  "refresh_token": "...",
+  "user": {
+    "id": 5,
+    "firstName": "John",
+    "lastName": "Doe",
+    "username": "john_doe",
+    "name": "John Doe",
+    "role": "customer",
+    "email": "john@example.com",
+    "avatar": "https://...",
+    "password": ""
+  }
+}
+```
+
+Errors:
+
+- `400` — validation error (missing/invalid fields)
+- `409` — email or username already registered
+
+---
 
 ### POST `/auth/login`
 
@@ -80,6 +129,9 @@ Response:
   "refresh_token": "...",
   "user": {
     "id": 1,
+    "firstName": "NextStore",
+    "lastName": "Admin",
+    "username": "admin",
     "name": "NextStore Admin",
     "role": "admin",
     "email": "admin@nextstore.dev",
@@ -127,6 +179,7 @@ Response: current user profile.
 Platzi-style list endpoint.
 
 Query params:
+
 - `title` (partial search)
 - `categoryId`
 - `price_min`
@@ -138,6 +191,7 @@ Query params:
 - `flat` = `true | false`
 
 Behavior:
+
 - default (`flat` omitted): returns `Product[]` (frontend-compatible)
 - `flat=false`: returns paginated object `{ data, meta }`
 
@@ -196,6 +250,7 @@ Request:
 ```
 
 ### PUT `/products/:id`
+
 ### PATCH `/products/:id`
 
 Update full/partial product with same fields as create.
@@ -211,12 +266,14 @@ Delete a product.
 ### GET `/categories`
 
 Query params:
+
 - `name` (search)
 - `offset`
 - `limit`
 - `flat` (`true|false`)
 
 Behavior:
+
 - default: `Category[]`
 - `flat=false`: `{ data, meta }`
 
@@ -246,7 +303,9 @@ Get products that belong to a category.
 ```
 
 ### PUT `/categories/:id`
+
 ### PATCH `/categories/:id`
+
 ### DELETE `/categories/:id`
 
 ---
@@ -256,12 +315,14 @@ Get products that belong to a category.
 ### GET `/users`
 
 Query params:
-- `search` (by name/email)
+
+- `search` (by firstName/lastName/username/email)
 - `offset`
 - `limit`
 - `flat` (`true|false`)
 
 Behavior:
+
 - default: `User[]`
 - `flat=false`: `{ data, meta }`
 
@@ -281,7 +342,9 @@ Get single user (public shape).
 
 ```json
 {
-  "name": "Jane Doe",
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "username": "jane_doe",
   "email": "jane@example.com",
   "password": "1234",
   "avatar": "https://example.com/avatar.png",
@@ -289,14 +352,19 @@ Get single user (public shape).
 }
 ```
 
+> `avatar` and `role` are optional.
+
 ### PUT `/users/:id`
+
 ### PATCH `/users/:id`
 
 Update user.
 
 ```json
 {
-  "name": "Jane Updated",
+  "firstName": "Jane",
+  "lastName": "Updated",
+  "username": "jane_updated",
   "email": "jane.updated@example.com",
   "avatar": "https://example.com/new.png",
   "password": "newpass1234"
@@ -314,6 +382,7 @@ Delete user.
 ### POST `/files/upload`
 
 `multipart/form-data`
+
 - field name: `file`
 
 Response:
@@ -363,6 +432,11 @@ curl "http://localhost:4000/api/v1/products?flat=false&limit=5&offset=0"
 
 # Get one product
 curl http://localhost:4000/api/v1/products/1
+
+# Register
+curl -X POST http://localhost:4000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"firstName":"John","lastName":"Doe","username":"john_doe","email":"john@example.com","password":"secret123"}'
 
 # Login
 curl -X POST http://localhost:4000/api/v1/auth/login \

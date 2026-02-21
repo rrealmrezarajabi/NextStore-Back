@@ -19,10 +19,13 @@ export class UsersService {
   sanitize(user: User) {
     return {
       id: user.id,
-      name: user.name,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      name: `${user.firstName} ${user.lastName}`,
       role: user.role,
       email: user.email,
-      avatar: user.avatar,
+      avatar: user.avatar ?? "",
       password: "",
     };
   }
@@ -35,7 +38,9 @@ export class UsersService {
     const where: Prisma.UserWhereInput = query.search
       ? {
           OR: [
-            { name: { contains: query.search } },
+            { firstName: { contains: query.search } },
+            { lastName: { contains: query.search } },
+            { username: { contains: query.search } },
             { email: { contains: query.search } },
           ],
         }
@@ -85,13 +90,25 @@ export class UsersService {
       throw new ConflictException("Email already exists");
     }
 
+    const existingUsername = await this.prisma.user.findUnique({
+      where: { username: dto.username },
+    });
+    if (existingUsername) {
+      throw new ConflictException("Username already exists");
+    }
+
     const passwordHash = await bcrypt.hash(dto.password, 10);
+    const avatar =
+      dto.avatar ??
+      `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(`${dto.firstName} ${dto.lastName}`)}`;
 
     const user = await this.prisma.user.create({
       data: {
-        name: dto.name,
+        firstName: dto.firstName,
+        lastName: dto.lastName,
+        username: dto.username,
         email: dto.email,
-        avatar: dto.avatar,
+        avatar,
         role: dto.role ?? ("customer" as AppRole),
         passwordHash,
       },
@@ -111,7 +128,9 @@ export class UsersService {
     }
 
     const data: Prisma.UserUpdateInput = {
-      name: dto.name,
+      firstName: dto.firstName,
+      lastName: dto.lastName,
+      username: dto.username,
       email: dto.email,
       avatar: dto.avatar,
       role: dto.role,

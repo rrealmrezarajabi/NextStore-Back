@@ -1,20 +1,20 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcrypt';
-import slugify from 'slugify';
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcrypt";
+import slugify from "slugify";
 
 const prisma = new PrismaClient();
 
 const categoryNames = [
-  'Electronics',
-  'Clothing',
-  'Shoes',
-  'Home',
-  'Beauty',
-  'Books',
-  'Sports',
-  'Toys',
-  'Groceries',
-  'Automotive',
+  "Electronics",
+  "Clothing",
+  "Shoes",
+  "Home",
+  "Beauty",
+  "Books",
+  "Sports",
+  "Toys",
+  "Groceries",
+  "Automotive",
 ];
 
 function randomInt(min: number, max: number): number {
@@ -31,28 +31,77 @@ async function main() {
   await prisma.category.deleteMany();
   await prisma.user.deleteMany();
 
-  const adminEmail = process.env.ADMIN_EMAIL ?? 'admin@nextstore.dev';
-  const adminPassword = process.env.ADMIN_PASSWORD ?? 'admin1234';
+  const adminEmail = process.env.ADMIN_EMAIL ?? "admin@nextstore.dev";
+  const adminPassword = process.env.ADMIN_PASSWORD ?? "admin1234";
 
   const adminPasswordHash = await bcrypt.hash(adminPassword, 10);
 
   await prisma.user.create({
     data: {
-      name: 'NextStore Admin',
+      firstName: "NextStore",
+      lastName: "Admin",
+      username: "admin",
       email: adminEmail,
-      role: 'admin',
-      avatar: 'https://i.pravatar.cc/300?img=68',
+      role: "admin",
+      avatar: "https://i.pravatar.cc/300?img=68",
       passwordHash: adminPasswordHash,
     },
   });
+
+  const firstNames = [
+    "Ali",
+    "Sara",
+    "Reza",
+    "Mina",
+    "Hasan",
+    "Zahra",
+    "Mehdi",
+    "Fatemeh",
+    "Amir",
+    "Nasrin",
+    "Dariush",
+    "Leila",
+    "Omid",
+    "Parisa",
+    "Kaveh",
+    "Shirin",
+    "Arman",
+    "Neda",
+    "Babak",
+    "Maryam",
+  ];
+  const lastNames = [
+    "Ahmadi",
+    "Hosseini",
+    "Mohammadi",
+    "Karimi",
+    "Moradi",
+    "Rezaei",
+    "Salehi",
+    "Bagheri",
+    "Tehrani",
+    "Shirazi",
+    "Mousavi",
+    "Jafari",
+    "Najafi",
+    "Rahmani",
+    "Esfahani",
+    "Nazari",
+    "Hashemi",
+    "Sadeghi",
+    "Ebrahimi",
+    "Tavakoli",
+  ];
 
   const userCreates = Array.from({ length: 20 }).map((_, i) => {
     const idx = i + 1;
     return prisma.user.create({
       data: {
-        name: `Customer ${idx}`,
+        firstName: firstNames[i],
+        lastName: lastNames[i],
+        username: `${firstNames[i].toLowerCase()}_${lastNames[i].toLowerCase()}`,
         email: `customer${idx}@nextstore.dev`,
-        role: 'customer',
+        role: "customer",
         avatar: `https://i.pravatar.cc/300?img=${(idx % 70) + 1}`,
         passwordHash: adminPasswordHash,
       },
@@ -72,28 +121,28 @@ async function main() {
   );
 
   const adjectives = [
-    'Premium',
-    'Modern',
-    'Compact',
-    'Smart',
-    'Comfort',
-    'Classic',
-    'Eco',
-    'Pro',
-    'Advanced',
-    'Lite',
+    "Premium",
+    "Modern",
+    "Compact",
+    "Smart",
+    "Comfort",
+    "Classic",
+    "Eco",
+    "Pro",
+    "Advanced",
+    "Lite",
   ];
   const nouns = [
-    'Headphones',
-    'Jacket',
-    'Sneakers',
-    'Lamp',
-    'Serum',
-    'Novel',
-    'Bike',
-    'Puzzle',
-    'Coffee',
-    'Toolkit',
+    "Headphones",
+    "Jacket",
+    "Sneakers",
+    "Lamp",
+    "Serum",
+    "Novel",
+    "Bike",
+    "Puzzle",
+    "Coffee",
+    "Toolkit",
   ];
 
   for (let i = 1; i <= 100; i += 1) {
@@ -120,7 +169,7 @@ async function main() {
     });
   }
 
-  console.log('Seed completed.');
+  console.log("Seed completed.");
   console.log(`Admin login: ${adminEmail} / ${adminPassword}`);
 }
 

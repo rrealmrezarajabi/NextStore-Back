@@ -10,16 +10,18 @@ import {
   Put,
   Query,
   UseGuards,
-} from '@nestjs/common';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { AccessTokenGuard } from '../auth/guards/access-token.guard';
-import { RolesGuard } from '../auth/guards/roles.guard';
-import { UsersService } from './users.service';
-import { UsersQueryDto } from './dto/users-query.dto';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+} from "@nestjs/common";
+import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
+import { Roles } from "../auth/decorators/roles.decorator";
+import { AccessTokenGuard } from "../auth/guards/access-token.guard";
+import { RolesGuard } from "../auth/guards/roles.guard";
+import { UsersService } from "./users.service";
+import { UsersQueryDto } from "./dto/users-query.dto";
+import { CreateUserDto } from "./dto/create-user.dto";
+import { UpdateUserDto } from "./dto/update-user.dto";
 
-@Controller('users')
+@ApiTags("Users")
+@Controller("users")
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
@@ -28,8 +30,8 @@ export class UsersController {
     return this.usersService.findMany(query);
   }
 
-  @Get(':id')
-  async findOne(@Param('id', ParseIntPipe) id: number) {
+  @Get(":id")
+  async findOne(@Param("id", ParseIntPipe) id: number) {
     return this.usersService.findOne(id);
   }
 
@@ -38,20 +40,26 @@ export class UsersController {
     return this.usersService.create(dto);
   }
 
-  @Put(':id')
-  async updatePut(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
+  @Put(":id")
+  async updatePut(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() dto: UpdateUserDto,
+  ) {
     return this.usersService.update(id, dto);
   }
 
-  @Patch(':id')
-  async updatePatch(@Param('id', ParseIntPipe) id: number, @Body() dto: UpdateUserDto) {
+  @Patch(":id")
+  async updatePatch(
+    @Param("id", ParseIntPipe) id: number,
+    @Body() dto: UpdateUserDto,
+  ) {
     return this.usersService.update(id, dto);
   }
 
-  @Delete(':id')
+  @Delete(":id")
   @UseGuards(AccessTokenGuard, RolesGuard)
-  @Roles('admin')
-  async remove(@Param('id', ParseIntPipe) id: number) {
+  @Roles("admin")
+  async remove(@Param("id", ParseIntPipe) id: number) {
     return this.usersService.remove(id);
   }
 }

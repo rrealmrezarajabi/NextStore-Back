@@ -1,16 +1,14 @@
 import {
   IsEmail,
-  IsIn,
   IsOptional,
   IsString,
   IsUrl,
   MinLength,
 } from "class-validator";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { APP_ROLES, AppRole } from "../../common/types/role.type";
 
-export class CreateUserDto {
-  @ApiProperty({ example: "Jane" })
+export class RegisterDto {
+  @ApiProperty({ example: "John" })
   @IsString()
   firstName!: string;
 
@@ -18,15 +16,15 @@ export class CreateUserDto {
   @IsString()
   lastName!: string;
 
-  @ApiProperty({ example: "jane_doe" })
+  @ApiProperty({ example: "john_doe" })
   @IsString()
   username!: string;
 
-  @ApiProperty({ example: "jane@example.com" })
+  @ApiProperty({ example: "john@example.com" })
   @IsEmail()
   email!: string;
 
-  @ApiProperty({ example: "1234", minLength: 4 })
+  @ApiProperty({ example: "secret123", minLength: 4 })
   @IsString()
   @MinLength(4)
   password!: string;
@@ -35,9 +33,11 @@ export class CreateUserDto {
   @IsOptional()
   @IsUrl()
   avatar?: string;
+}
+  @MinLength(4)
+  password!: string;
 
-  @ApiPropertyOptional({ enum: APP_ROLES, example: "customer" })
   @IsOptional()
-  @IsIn(APP_ROLES)
-  role?: AppRole;
+  @IsUrl()
+  avatar?: string;
 }
