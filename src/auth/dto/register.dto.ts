@@ -34,10 +34,3 @@ export class RegisterDto {
   @IsUrl()
   avatar?: string;
 }
-  @MinLength(4)
-  password!: string;
-
-  @IsOptional()
-  @IsUrl()
-  avatar?: string;
-}

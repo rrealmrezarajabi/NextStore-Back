@@ -33,7 +33,7 @@ export class CreateUserDto {
 
   @ApiPropertyOptional({ example: "https://example.com/avatar.jpg" })
   @IsOptional()
-  @IsUrl()
+  @IsUrl({ require_tld: false })
   avatar?: string;
 
   @ApiPropertyOptional({ enum: APP_ROLES, example: "customer" })
