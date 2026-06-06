@@ -257,6 +257,33 @@ Authorization: Bearer <access_token>
 
 Response: current user profile.
 
+### PATCH `/auth/profile`
+
+Update current user profile. Requires:
+
+```txt
+Authorization: Bearer <access_token>
+```
+
+> The access token may also be provided by the `access_token` cookie.
+
+Request:
+
+```json
+{
+  "firstName": "Jane",
+  "lastName": "Updated",
+  "username": "jane_updated",
+  "email": "jane.updated@example.com",
+  "avatar": "https://example.com/avatar.jpg",
+  "password": "newpass1234"
+}
+```
+
+> All fields are optional. `role` cannot be updated from this endpoint.
+
+Response: updated current user profile.
+
 ---
 
 ## Products

@@ -1,10 +1,20 @@
-import { Body, Controller, Get, Post, Req, Res, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
 import { Request, Response } from "express";
 import { AccessTokenGuard } from "./guards/access-token.guard";
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/login.dto";
 import { RegisterDto } from "./dto/register.dto";
+import { UpdateProfileDto } from "./dto/update-profile.dto";
 import { CurrentUser } from "./decorators/current-user.decorator";
 
 @ApiTags("Auth")
@@ -95,5 +105,16 @@ export class AuthController {
   @UseGuards(AccessTokenGuard)
   async profile(@CurrentUser() user: { sub: number }) {
     return this.authService.profile(user.sub);
+  }
+
+  @ApiOperation({ summary: "Update current user profile" })
+  @ApiBearerAuth()
+  @Patch("profile")
+  @UseGuards(AccessTokenGuard)
+  async updateProfile(
+    @CurrentUser() user: { sub: number },
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.authService.updateProfile(user.sub, dto);
   }
 }
