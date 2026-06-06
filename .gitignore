@@ -2,5 +2,6 @@ node_modules
 .env
 dist
 coverage
+prisma/prisma/
 uploads/*
 !uploads/.gitkeep

@@ -60,6 +60,61 @@ This API is designed to feel like Platzi Fake Store API while keeping a stable l
 }
 ```
 
+### Cart
+
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "quantity": 2,
+      "subtotal": 440,
+      "product": { "id": 1, "title": "Modern Jacket 1", "price": 220 }
+    }
+  ],
+  "totalItems": 2,
+  "total": 440
+}
+```
+
+### Address
+
+```json
+{
+  "id": 1,
+  "label": "Home",
+  "fullName": "John Doe",
+  "phone": "09123456789",
+  "province": "Tehran",
+  "city": "Tehran",
+  "street": "Valiasr St, No. 12",
+  "postalCode": "1234567890",
+  "isDefault": true
+}
+```
+
+### Order
+
+```json
+{
+  "id": 1,
+  "status": "pending",
+  "total": 440,
+  "address": null,
+  "items": [
+    {
+      "id": 1,
+      "productId": 1,
+      "productTitle": "Modern Jacket 1",
+      "productImage": "https://...",
+      "unitPrice": 220,
+      "quantity": 2,
+      "subtotal": 440
+    }
+  ]
+}
+```
+
 ## Auth
 
 ### POST `/auth/register`
@@ -85,8 +140,6 @@ Response:
 
 ```json
 {
-  "access_token": "...",
-  "refresh_token": "...",
   "user": {
     "id": 5,
     "firstName": "John",
@@ -99,6 +152,13 @@ Response:
     "password": ""
   }
 }
+```
+
+Cookies:
+
+```txt
+Set-Cookie: access_token=...; HttpOnly; SameSite=Lax; Path=/
+Set-Cookie: refresh_token=...; HttpOnly; SameSite=Lax; Path=/
 ```
 
 Errors:
@@ -125,8 +185,6 @@ Response:
 
 ```json
 {
-  "access_token": "...",
-  "refresh_token": "...",
   "user": {
     "id": 1,
     "firstName": "NextStore",
@@ -141,6 +199,13 @@ Response:
 }
 ```
 
+Cookies:
+
+```txt
+Set-Cookie: access_token=...; HttpOnly; SameSite=Lax; Path=/
+Set-Cookie: refresh_token=...; HttpOnly; SameSite=Lax; Path=/
+```
+
 ### POST `/auth/refresh`
 
 Request:
@@ -151,12 +216,32 @@ Request:
 }
 ```
 
+> The refresh token may also be provided by the `refresh_token` cookie.
+
 Response:
 
 ```json
 {
-  "access_token": "...",
-  "refresh_token": "..."
+  "success": true
+}
+```
+
+Cookies:
+
+```txt
+Set-Cookie: access_token=...; HttpOnly; SameSite=Lax; Path=/
+Set-Cookie: refresh_token=...; HttpOnly; SameSite=Lax; Path=/
+```
+
+### POST `/auth/logout`
+
+Clears auth cookies.
+
+Response:
+
+```json
+{
+  "success": true
 }
 ```
 
@@ -167,6 +252,8 @@ Headers:
 ```txt
 Authorization: Bearer <access_token>
 ```
+
+> The access token may also be provided by the `access_token` cookie.
 
 Response: current user profile.
 
@@ -377,6 +464,165 @@ Delete user.
 
 ---
 
+## Cart
+
+All cart endpoints require:
+
+```txt
+Authorization: Bearer <access_token>
+```
+
+### GET `/cart`
+
+Get current user's cart.
+
+### POST `/cart/items`
+
+Add a product to cart. If the product already exists in cart, quantity is incremented.
+
+Request:
+
+```json
+{
+  "productId": 1,
+  "quantity": 2
+}
+```
+
+### PATCH `/cart/items/:id`
+
+Update cart item quantity.
+
+Request:
+
+```json
+{
+  "quantity": 3
+}
+```
+
+### DELETE `/cart/items/:id`
+
+Remove a cart item owned by the current user.
+
+### DELETE `/cart`
+
+Clear current user's cart.
+
+---
+
+## Addresses
+
+All address endpoints require:
+
+```txt
+Authorization: Bearer <access_token>
+```
+
+### GET `/addresses`
+
+Get current user's addresses.
+
+### POST `/addresses`
+
+Create an address for the current user.
+
+Request:
+
+```json
+{
+  "label": "Home",
+  "fullName": "John Doe",
+  "phone": "09123456789",
+  "province": "Tehran",
+  "city": "Tehran",
+  "street": "Valiasr St, No. 12",
+  "postalCode": "1234567890",
+  "isDefault": true
+}
+```
+
+> `label` and `isDefault` are optional. The first address is automatically default.
+
+### PATCH `/addresses/:id`
+
+Update an address owned by the current user.
+
+### DELETE `/addresses/:id`
+
+Delete an address owned by the current user.
+
+---
+
+## Orders
+
+All order endpoints require:
+
+```txt
+Authorization: Bearer <access_token>
+```
+
+Order status values:
+
+```txt
+pending | paid | shipped | delivered | canceled
+```
+
+### POST `/orders`
+
+Create an order from the current user's cart. Product title, image and price are copied into order items, then the cart is cleared.
+
+Request:
+
+```json
+{
+  "addressId": 1
+}
+```
+
+> `addressId` is optional. If provided, it must belong to the current user.
+
+Errors:
+
+- `400` — cart is empty
+- `404` — address not found
+
+### GET `/orders/my`
+
+Get current user's orders.
+
+Query params:
+
+- `page`
+- `limit`
+
+### GET `/orders/:id`
+
+Get one order. Customers can only access their own orders. Admins can access any order.
+
+### GET `/orders`
+
+Admin only. Get all orders.
+
+Query params:
+
+- `page`
+- `limit`
+
+### PATCH `/orders/:id/status`
+
+Admin only. Update order status.
+
+Request:
+
+```json
+{
+  "status": "paid"
+}
+```
+
+---
+
 ## Files
 
 ### POST `/files/upload`
@@ -443,9 +689,30 @@ curl -X POST http://localhost:4000/api/v1/auth/login \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@nextstore.dev","password":"admin1234"}'
 
+# Logout
+curl -X POST http://localhost:4000/api/v1/auth/logout
+
 # Profile
 curl http://localhost:4000/api/v1/auth/profile \
   -H "Authorization: Bearer <ACCESS_TOKEN>"
+
+# Add item to cart
+curl -X POST http://localhost:4000/api/v1/cart/items \
+  -H "Authorization: Bearer <ACCESS_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"productId":1,"quantity":2}'
+
+# Create address
+curl -X POST http://localhost:4000/api/v1/addresses \
+  -H "Authorization: Bearer <ACCESS_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"fullName":"John Doe","phone":"09123456789","province":"Tehran","city":"Tehran","street":"Valiasr St, No. 12","postalCode":"1234567890","isDefault":true}'
+
+# Create order from cart
+curl -X POST http://localhost:4000/api/v1/orders \
+  -H "Authorization: Bearer <ACCESS_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"addressId":1}'
 ```
 
 ## Frontend Usage Note
