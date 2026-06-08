@@ -111,12 +111,14 @@ Paginated format:
 - `POST /auth/refresh`
 - `GET /auth/profile` (Bearer token)
 
-## Security Toggle
+## Role Guard Toggle
 
 Env: `AUTH_GUARDS_ENABLED`
 
-- `false` (default): frontend-friendly mode (public CRUD used by current frontend)
-- `true`: enforces JWT + admin role guards on protected routes
+- `false` (default): skips admin role checks on protected admin routes
+- `true`: enforces admin role checks on protected admin routes
+
+JWT-protected routes still require a valid access token in either the `Authorization: Bearer <token>` header or the `access_token` cookie.
 
 ## File Upload
 

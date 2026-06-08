@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiTags, ApiOperation, ApiBearerAuth } from "@nestjs/swagger";
-import { Request, Response } from "express";
+import { CookieOptions, Request, Response } from "express";
 import { AccessTokenGuard } from "./guards/access-token.guard";
 import { AuthService } from "./auth.service";
 import { LoginDto } from "./dto/login.dto";
@@ -38,28 +38,33 @@ export class AuthController {
     res: Response,
     tokens: { access_token: string; refresh_token: string },
   ) {
-    const secure = process.env.NODE_ENV === "production";
+    const cookieOptions = this.getAuthCookieOptions();
 
     res.cookie("access_token", tokens.access_token, {
-      httpOnly: true,
-      secure,
-      sameSite: "lax",
-      path: "/",
+      ...cookieOptions,
       maxAge: 15 * 60 * 1000,
     });
 
     res.cookie("refresh_token", tokens.refresh_token, {
-      httpOnly: true,
-      secure,
-      sameSite: "lax",
-      path: "/",
+      ...cookieOptions,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
   }
 
+  private getAuthCookieOptions(): CookieOptions {
+    return {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+    };
+  }
+
   private clearAuthCookies(res: Response) {
-    res.clearCookie("access_token", { path: "/" });
-    res.clearCookie("refresh_token", { path: "/" });
+    const cookieOptions = this.getAuthCookieOptions();
+
+    res.clearCookie("access_token", cookieOptions);
+    res.clearCookie("refresh_token", cookieOptions);
   }
 
   @ApiOperation({ summary: "Register a new customer account" })
