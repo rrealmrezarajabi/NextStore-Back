@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { Prisma } from "@prisma/client";
 import { PrismaService } from "../prisma/prisma.service";
 import { paginate } from "../common/utils/paginate";
@@ -74,6 +78,16 @@ export class CategoriesService {
 
   async remove(id: number) {
     await this.findOne(id);
+    const productCount = await this.prisma.product.count({
+      where: { categoryId: id },
+    });
+
+    if (productCount > 0) {
+      throw new ConflictException(
+        `Category with id ${id} cannot be deleted because it has products`,
+      );
+    }
+
     await this.prisma.category.delete({ where: { id } });
     return { id, deleted: true };
   }
