@@ -9,6 +9,7 @@ import { PaginationQueryDto } from "../common/dto/pagination-query.dto";
 import { paginate } from "../common/utils/paginate";
 import { PrismaService } from "../prisma/prisma.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
+import { OrdersQueryDto } from "./dto/orders-query.dto";
 import { UpdateOrderStatusDto } from "./dto/update-order-status.dto";
 
 const orderInclude = Prisma.validator<Prisma.OrderInclude>()({
@@ -131,19 +132,42 @@ export class OrdersService {
     });
   }
 
-  async findAll(query: PaginationQueryDto) {
+  async findAll(query: OrdersQueryDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
+    const search = query.search?.trim();
+
+    const where: Prisma.OrderWhereInput = search
+      ? {
+          OR: [
+            ...(Number.isFinite(Number(search))
+              ? [{ id: Number(search) }, { total: Number(search) }]
+              : []),
+            { status: { contains: search } },
+            { user: { firstName: { contains: search } } },
+            { user: { lastName: { contains: search } } },
+            { user: { username: { contains: search } } },
+            { user: { email: { contains: search } } },
+            { address: { fullName: { contains: search } } },
+            { address: { phone: { contains: search } } },
+            { address: { city: { contains: search } } },
+            { address: { province: { contains: search } } },
+            { address: { postalCode: { contains: search } } },
+            { items: { some: { productTitle: { contains: search } } } },
+          ],
+        }
+      : {};
 
     const [items, total] = await Promise.all([
       this.prisma.order.findMany({
+        where,
         skip,
         take: limit,
         include: orderInclude,
         orderBy: { createdAt: "desc" },
       }),
-      this.prisma.order.count(),
+      this.prisma.order.count({ where }),
     ]);
 
     return paginate(

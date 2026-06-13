@@ -16,6 +16,7 @@ import { AccessTokenGuard } from "../auth/guards/access-token.guard";
 import { RolesGuard } from "../auth/guards/roles.guard";
 import { PaginationQueryDto } from "../common/dto/pagination-query.dto";
 import { CreateOrderDto } from "./dto/create-order.dto";
+import { OrdersQueryDto } from "./dto/orders-query.dto";
 import { UpdateOrderStatusDto } from "./dto/update-order-status.dto";
 import { OrdersService } from "./orders.service";
 
@@ -36,7 +37,7 @@ export class OrdersController {
   @Get()
   @UseGuards(RolesGuard)
   @Roles("admin")
-  async findAll(@Query() query: PaginationQueryDto) {
+  async findAll(@Query() query: OrdersQueryDto) {
     return this.ordersService.findAll(query);
   }
 

@@ -635,6 +635,7 @@ Query params:
 
 - `page`
 - `limit`
+- `search` — optional. Searches order id, total, status, user fields, delivery address fields, and ordered product titles.
 
 ### PATCH `/orders/:id/status`
 
