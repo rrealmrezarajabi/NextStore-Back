@@ -137,27 +137,22 @@ export class OrdersService {
     const limit = query.limit ?? 20;
     const skip = (page - 1) * limit;
     const search = query.search?.trim();
+    const orderId = query.orderId;
 
-    const where: Prisma.OrderWhereInput = search
-      ? {
-          OR: [
-            ...(Number.isFinite(Number(search))
-              ? [{ id: Number(search) }, { total: Number(search) }]
-              : []),
-            { status: { contains: search } },
-            { user: { firstName: { contains: search } } },
-            { user: { lastName: { contains: search } } },
-            { user: { username: { contains: search } } },
-            { user: { email: { contains: search } } },
-            { address: { fullName: { contains: search } } },
-            { address: { phone: { contains: search } } },
-            { address: { city: { contains: search } } },
-            { address: { province: { contains: search } } },
-            { address: { postalCode: { contains: search } } },
-            { items: { some: { productTitle: { contains: search } } } },
-          ],
-        }
-      : {};
+    let where: Prisma.OrderWhereInput = {};
+
+    if (orderId) {
+      where = { id: orderId };
+    } else if (search) {
+      where = {
+        OR: [
+          { user: { firstName: { contains: search } } },
+          { user: { lastName: { contains: search } } },
+          { user: { username: { contains: search } } },
+          { address: { fullName: { contains: search } } },
+        ],
+      };
+    }
 
     const [items, total] = await Promise.all([
       this.prisma.order.findMany({
